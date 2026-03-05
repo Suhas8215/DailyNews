@@ -1,0 +1,20 @@
+# Render.com blueprint - deploy as a Web Service
+services:
+  - type: web
+    name: newsbot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_TO
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TRIGGER_TOKEN
+        sync: false
