@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Briefing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      color: #e8e8e8;
+      padding: 1.5rem;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 2rem;
+    }
+    button {
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.5);
+    }
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .message {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      min-height: 1.5em;
+    }
+    .message.success { color: #34d399; }
+    .message.error { color: #f87171; }
+    input[type="password"] {
+      width: 100%;
+      max-width: 280px;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      color: inherit;
+      font-size: 0.95rem;
+    }
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📰 News Briefing</h1>
+    <p class="subtitle">Send today's headlines to your email</p>
+
+    <div id="token-wrap" style="display: none;">
+      <input type="password" id="token" placeholder="Enter your token" autocomplete="off">
+    </div>
+
+    <button id="btn" onclick="send()">Send to My Email</button>
+    <p id="msg" class="message"></p>
+  </div>
+
+  <script>
+    const needsToken = {{ "true" if needs_token else "false" }};
+    if (needsToken) {
+      document.getElementById('token-wrap').style.display = 'block';
+    }
+
+    async function send() {
+      const btn = document.getElementById('btn');
+      const msg = document.getElementById('msg');
+      btn.disabled = true;
+      msg.textContent = 'Sending…';
+      msg.className = 'message';
+
+      try {
+        const token = document.getElementById('token')?.value || '';
+        const opts = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Token': token },
+          body: JSON.stringify({})
+        };
+        const r = await fetch('/send', opts);
+        const data = await r.json();
+
+        if (r.ok && data.ok) {
+          msg.textContent = data.message || 'Done! Check your inbox.';
+          msg.className = 'message success';
+        } else {
+          msg.textContent = data.error || data.message || 'Something went wrong.';
+          msg.className = 'message error';
+        }
+      } catch (e) {
+        msg.textContent = 'Network error: ' + e.message;
+        msg.className = 'message error';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
